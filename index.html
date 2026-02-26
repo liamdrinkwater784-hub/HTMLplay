@@ -175,10 +175,12 @@ document.getElementById('enterBtn').addEventListener('click',()=>{
   btn.style.transform='scale(0.95)';
   setTimeout(()=>{btn.style.transform='scale(1.06)';},150);
   setTimeout(()=>{
-    const p=document.getElementById('pi');
-    p.style.transition='opacity 0.4s ease,transform 0.4s cubic-bezier(0.4,0,1,1)';
-    p.style.opacity='0';p.style.transform='scale(1.04)';
-    setTimeout(()=>{showPage('pl');initLib();initWheel();initCtrlFab();},400);
+    window.showChangelog(()=>{
+      const p=document.getElementById('pi');
+      p.style.transition='opacity 0.4s ease,transform 0.4s cubic-bezier(0.4,0,1,1)';
+      p.style.opacity='0';p.style.transform='scale(1.04)';
+      setTimeout(()=>{showPage('pl');initLib();initWheel();initCtrlFab();},400);
+    });
   },220);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('pi').classList.contains('active'))document.getElementById('enterBtn').click();});
@@ -195,7 +197,7 @@ function vsLay(){const rows=Math.ceil(dispG.length/vsCols);const totalH=rows*vsR
 function vsRdr(){if(!libOk||!dispG.length)return;const w=document.getElementById('gridWrap');const vH=w.clientHeight;const grid=document.getElementById('gameGrid');const W2=grid.offsetWidth;const cW=(W2-vsPS*2-(vsCols-1)*vsG)/vsCols;const fr=Math.max(0,Math.floor((vsST-vsPT)/vsRH)-vsBuf);const lr=Math.min(Math.ceil(dispG.length/vsCols)-1,Math.ceil((vsST+vH-vsPT)/vsRH)+vsBuf);const fi=fr*vsCols;const li=Math.min(dispG.length-1,(lr+1)*vsCols-1);for(const[idx,el] of vsRend){if(idx<fi||idx>li){el.remove();vsRend.delete(idx);}}for(let i=fi;i<=li;i++){if(vsRend.has(i))continue;const g=dispG[i];const row=Math.floor(i/vsCols);const col=i%vsCols;const x=vsPS+col*(cW+vsG);const y=vsPT+row*vsRH;const el=mkCard(g);el.style.cssText=`position:absolute;left:${x}px;top:${y}px;width:${cW}px;height:${vsH}px`;if(vsFirstLoad){const delay=Math.min((i-fi)*28,320);el.style.animationDelay=delay+'ms';el.classList.add('entering');setTimeout(()=>el.classList.remove('entering'),delay+500);}grid.appendChild(el);vsRend.set(i,el);}if(window._scObserveAll)window._scObserveAll();}
 function initLib(){if(libOk){updCts();return;}setTimeout(()=>{dispG=getDisp();document.getElementById('libLdr').style.display='none';document.getElementById('gridWrap').classList.remove('hidden');document.getElementById('rc').textContent=dispG.length.toLocaleString();updCts();libOk=true;vsInit();requestAnimationFrame(()=>requestAnimationFrame(()=>vsRsz()));setTimeout(()=>{vsFirstLoad=false;},1200);},60);}
 function rerdr(){dispG=getDisp();document.getElementById('rc').textContent=dispG.length.toLocaleString();const grid=document.getElementById('gameGrid');vsRend.forEach(el=>el.remove());vsRend.clear();vsFirstLoad=true;setTimeout(()=>{vsFirstLoad=false;},900);document.getElementById('gridWrap').classList.remove('hidden');document.getElementById('libEmpty').classList.add('hidden');if(!dispG.length){document.getElementById('gridWrap').classList.add('hidden');document.getElementById('libEmpty').classList.remove('hidden');return;}const w=document.getElementById('gridWrap');vsST=w.scrollTop=0;vsRsz();}
-function mkCard(g){const fav=isF(g.id);const div=document.createElement('div');div.className='gc';const tH=g.thumb?'<img data-src="'+g.thumb+'" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity .3s" loading="lazy" onerror="this.remove()" class="lz">':'';div.innerHTML=`<div class="gc-th" style="background:linear-gradient(135deg,${g.g1||'#0d0d28'},${g.g2||'#07071a'})">${tH}<span style="font-size:2.1rem;position:relative;z-index:1;${g.thumb?'opacity:0;':''}">${g.emoji||'🎮'}</span></div><button class="gc-fav${fav?' on':''}" data-id="${g.id}">${fav?'♥':'♡'}</button><div class="gc-body"><div class="gc-title">${g.title}</div><div class="gc-desc">${g.desc||''}</div><div class="gc-tags">${(g.tags||[]).slice(0,2).map(t=>`<span class="gtag">${t}</span>`).join('')}</div></div>${g.plays?`<div class="gc-plays">${fmtN(g.plays)} plays</div>`:''}`;div.addEventListener('click',e=>{if(e.target.closest('.gc-fav'))return;openGame(g);});div.querySelector('.gc-fav').addEventListener('click',e=>{e.stopPropagation();const now=togF(g.id);e.currentTarget.classList.toggle('on',now);e.currentTarget.textContent=now?'♥':'♡';toast(now?'Added to favourites':'Removed from favourites',now?'s':'i');updCts();if(lTab==='favs')rerdr();});return div;}
+function mkCard(g){const fav=isF(g.id);const div=document.createElement('div');div.className='gc';const tH=g.thumb?'<img data-src="'+g.thumb+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity .3s" loading="lazy" onerror="this.remove()" class="lz">':'';div.innerHTML=`<div class="gc-th" style="background:linear-gradient(135deg,${g.g1||'#0d0d28'},${g.g2||'#07071a'})">${tH}<span style="font-size:2.1rem;position:relative;z-index:1;${g.thumb?'opacity:0;':''}">${g.emoji||'🎮'}</span></div><button class="gc-fav${fav?' on':''}" data-id="${g.id}">${fav?'♥':'♡'}</button><div class="gc-body"><div class="gc-title">${g.title}</div><div class="gc-desc">${g.desc||''}</div><div class="gc-tags">${(g.tags||[]).slice(0,2).map(t=>`<span class="gtag">${t}</span>`).join('')}</div></div>${g.plays?`<div class="gc-plays">${fmtN(g.plays)} plays</div>`:''}`;div.addEventListener('click',e=>{if(e.target.closest('.gc-fav'))return;openGame(g);});div.querySelector('.gc-fav').addEventListener('click',e=>{e.stopPropagation();const now=togF(g.id);e.currentTarget.classList.toggle('on',now);e.currentTarget.textContent=now?'♥':'♡';toast(now?'Added to favourites':'Removed from favourites',now?'s':'i');updCts();if(lTab==='favs')rerdr();});return div;}
 document.querySelectorAll('.mt').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.mt').forEach(x=>x.classList.remove('active'));b.classList.add('active');lTab=b.dataset.tab;rerdr();});});
 document.querySelectorAll('.cb').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.cb').forEach(x=>x.classList.remove('active'));b.classList.add('active');lCat=b.dataset.cat;rerdr();});});
 document.getElementById('sortSel').addEventListener('change',e=>{lSort=e.target.value;rerdr();});
@@ -773,7 +775,7 @@ window.scConnect = function() {
         obs.unobserve(img);
       }
     });
-  }, {rootMargin:'400px 0px', threshold:0.01});
+  }, {root:document.getElementById('gridWrap'),rootMargin:'200px 0px',threshold:0.01});
 
   /* Watch grid for new cards from virtual scroller */
   var grid = document.getElementById('gameGrid');
@@ -792,6 +794,142 @@ window.scConnect = function() {
 })();
 </script>
 
+
+
+<!-- CHANGELOG MODAL -->
+<div id="clModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)">
+  <div style="background:linear-gradient(160deg,#07071a,#0d0d28);border:1px solid rgba(0,245,255,.22);border-radius:18px;max-width:520px;width:92vw;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 0 80px rgba(0,245,255,.12),0 32px 80px rgba(0,0,0,.7);overflow:hidden">
+    <!-- Header -->
+    <div style="padding:20px 24px 14px;border-bottom:1px solid rgba(0,245,255,.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-family:var(--fd);font-size:.65rem;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin-bottom:4px">HTMLplay</div>
+        <div style="font-family:var(--fd);font-size:1.1rem;font-weight:700;color:var(--text)">Update Log</div>
+      </div>
+      <button onclick="clEnter()" style="background:rgba(0,245,255,.1);border:1px solid rgba(0,245,255,.25);border-radius:99px;color:var(--accent);font-family:var(--fd);font-size:.65rem;font-weight:700;letter-spacing:.12em;padding:8px 18px;cursor:pointer;transition:background .2s">ENTER →</button>
+    </div>
+    <!-- Scrollable log -->
+    <div style="overflow-y:auto;padding:18px 24px 24px;flex:1" id="clBody"></div>
+  </div>
+</div>
+
+<script>
+/* ══ CHANGELOG — edit entries here ══════════════════════════ */
+var CL_ENTRIES = [
+  {
+    version: 'v3.0',
+    date: 'Feb 2025',
+    added: [
+      'Smart controller system — auto-detects game type and builds a custom on-screen controller',
+      'FIFA controller profiles: FIFA 95/96/97, FIFA 98, FIFA 99/2000, FIFA 06-11, FIFA Street 2',
+      'Controller shoulder buttons for complex games (FIFA, FPS, Fighting)',
+      'Mobile auto-show: controller appears automatically on touch devices',
+      '🎮 Ctrl connect button in game toolbar to force-focus iframe and show controller',
+      'Audio stops when leaving a game (back button kills all sound)',
+    ],
+    fixed: [
+      'Icons now load correctly (IntersectionObserver root was wrong — now scoped to scroll container)',
+      'FIFA games no longer show network error (navigation interceptor was resetting the iframe)',
+      'Controller buttons were invisible — .co.on CSS rule was missing',
+      'Game click crash fixed — scOnGameOpen was called before the script that defines it loaded',
+      'Controller FAB button crash fixed — scToggle called before it was defined',
+      'Removed src="" from icon images which was firing bad network requests',
+    ]
+  },
+  {
+    version: 'v2.0',
+    date: 'Jan 2025',
+    added: [
+      '2,378 games in the library',
+      'Large games (Eaglercraft, etc.) hosted on Cloudflare R2',
+      'Virtual scroll — only renders visible cards for smooth performance',
+      'Favourites, recent games, game recommendations',
+      'Stealth mode (rename tab to anything)',
+      'Spin the wheel random game picker',
+    ],
+    fixed: [
+      'Game restart bug — clicking a game reloaded the whole site',
+      'Lazy loading for icons implemented',
+    ]
+  },
+];
+
+/* ══ RENDER ══════════════════════════════════════════════════ */
+(function() {
+  function buildLog() {
+    var body = document.getElementById('clBody');
+    if (!body) return;
+    var html = '';
+    CL_ENTRIES.forEach(function(e, i) {
+      html += '<div style="margin-bottom:' + (i < CL_ENTRIES.length-1 ? '24' : '0') + 'px">';
+      // Version header
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">';
+      html += '<span style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:var(--fd);font-size:1rem;font-weight:700">' + e.version + '</span>';
+      html += '<span style="font-size:.65rem;color:var(--text-muted);font-family:var(--fd)">' + e.date + '</span>';
+      html += '</div>';
+      // Added
+      if (e.added && e.added.length) {
+        html += '<div style="font-size:.6rem;font-family:var(--fd);letter-spacing:.12em;color:#00ff88;text-transform:uppercase;margin-bottom:6px">✦ Added</div>';
+        html += '<ul style="margin:0 0 12px 0;padding:0;list-style:none">';
+        e.added.forEach(function(item) {
+          html += '<li style="font-size:.78rem;color:var(--text-dim);padding:4px 0 4px 14px;border-left:2px solid rgba(0,255,136,.3);margin-bottom:4px;line-height:1.45">' + item + '</li>';
+        });
+        html += '</ul>';
+      }
+      // Fixed
+      if (e.fixed && e.fixed.length) {
+        html += '<div style="font-size:.6rem;font-family:var(--fd);letter-spacing:.12em;color:#ff9944;text-transform:uppercase;margin-bottom:6px">✦ Fixed</div>';
+        html += '<ul style="margin:0;padding:0;list-style:none">';
+        e.fixed.forEach(function(item) {
+          html += '<li style="font-size:.78rem;color:var(--text-dim);padding:4px 0 4px 14px;border-left:2px solid rgba(255,153,68,.3);margin-bottom:4px;line-height:1.45">' + item + '</li>';
+        });
+        html += '</ul>';
+      }
+      html += '</div>';
+      // Divider
+      if (i < CL_ENTRIES.length - 1) {
+        html += '<div style="border-top:1px solid rgba(255,255,255,.06);margin-bottom:24px"></div>';
+      }
+    });
+    body.innerHTML = html;
+  }
+  buildLog();
+})();
+
+/* ══ SHOW / DISMISS ══════════════════════════════════════════ */
+window.showChangelog = function(onEnter) {
+  window._clCallback = onEnter;
+  var m = document.getElementById('clModal');
+  m.style.display = 'flex';
+  // Animate in
+  var box = m.children[0];
+  box.style.opacity = '0';
+  box.style.transform = 'scale(0.92) translateY(16px)';
+  box.style.transition = 'opacity .35s cubic-bezier(0.16,1,0.3,1), transform .35s cubic-bezier(0.16,1,0.3,1)';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1) translateY(0)';
+    });
+  });
+};
+
+window.clEnter = function() {
+  var m = document.getElementById('clModal');
+  var box = m.children[0];
+  box.style.transition = 'opacity .2s ease, transform .2s ease';
+  box.style.opacity = '0';
+  box.style.transform = 'scale(0.96)';
+  setTimeout(function() {
+    m.style.display = 'none';
+    if (window._clCallback) { window._clCallback(); window._clCallback = null; }
+  }, 200);
+};
+
+// Close on backdrop click
+document.getElementById('clModal').addEventListener('click', function(e) {
+  if (e.target === this) window.clEnter();
+});
+</script>
 
 </body>
 </html>
